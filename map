@@ -2,54 +2,55 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Add Controls</title>
+<title>Dynamic Map Integration</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 <script src="https://tiles.locationiq.com/v3/libs/maplibre-gl/1.15.2/maplibre-gl.js"></script>
 <link href="https://tiles.locationiq.com/v3/libs/maplibre-gl/1.15.2/maplibre-gl.css" rel="stylesheet" />
-<script src="https://tiles.locationiq.com/v3/js/liq-styles-ctrl-libre-gl.js?v=0.1.8"></script>
-<link href="https://tiles.locationiq.com/v3/css/liq-styles-ctrl-libre-gl.css?v=0.1.8" rel="stylesheet" />
 <style>
-            body { margin:0px; padding:0px; }
-            #map { position:absolute; top:0px; bottom:0px; width:100%; }
-        </style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100vh; } /* Adjust size as needed */
+</style>
 </head>
 <body>
 <div id="map"></div>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        locationiq.key = 'pk.85bc6b04d2a320fa3202e41e57a1a84b'; // Replace with your actual LocationIQ access token
 
-            //Add your LocationIQ Maps Access Token here (not the API token!)
-            locationiq.key = 'pk.aa7f5d0539c5675b7f3429402939d8fa';
-            //Define the map and configure the map's theme
-            var map = new maplibregl.Map({
-                container: 'map',
-                style: locationiq.getLayer("Streets"),
-                zoom: 12,
-                center: [-122.42, 37.779]
+        var map = new maplibregl.Map({
+            container: 'map', // container ID
+            style: locationiq.getLayer("Streets"), // Map style
+            center: [-122.42, 37.779], // Initial position [lng, lat]
+            zoom: 12 // Initial zoom
+        });
+
+        // Add navigation and other controls
+        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+        map.addControl(new maplibregl.FullscreenControl());
+        map.addControl(new maplibregl.ScaleControl({
+            maxWidth: 80,
+            unit: 'metric'
+        }));
+
+        // Add geolocation control
+        map.addControl(new maplibregl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true
+        }));
+
+        // Attempt to fetch and center on the user's current location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                map.setCenter([position.coords.longitude, position.coords.latitude]);
+            }, function(error) {
+                console.error("Geolocation error:", error);
             });
-            
-            //Add Navigation controls to the map to the top-right corner of the map
-            var nav = new maplibregl.NavigationControl();
-            map.addControl(nav, 'top-right');
-
-
-            //Add a 'full screen' button to the map
-            map.addControl(new maplibregl.FullscreenControl());
-            
-            //Add a Scale to the map
-            map.addControl(new maplibregl.ScaleControl({
-                maxWidth: 80,
-                unit: 'metric' //imperial for miles
-            }));
-
-            //Add Geolocation control to the map (will only render when page is opened over HTTPS)
-            map.addControl(new maplibregl.GeolocateControl({    
-                positionOptions: {
-                    enableHighAccuracy: true
-                },
-                trackUserLocation: true
-            }));
-
-
-        </script>
+        } else {
+            console.log("Geolocation is not supported by this browser.");
+        }
+    });
+</script>
 </body>
 </html>
